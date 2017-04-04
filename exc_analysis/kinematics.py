@@ -183,7 +183,4 @@ def forward_kin_array(states, bias=17.1):
     states_xyz = np.array(forward_kin_vec(exc, states[:, 3], states[:, 0],
                                           states[:, 1], states[:, 2], bias=bias))
 
-    return states_xyz
-
-
-
+    return states_xyz.T

@@ -19,8 +19,9 @@
 import numpy as np
 import math
 from kinematics import exc
-import itertools.cycle
+import itertools
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def draw_exc(ax, state, lw=2, lock_axes=True, rotate=True, gnd_offset=17.1):
@@ -119,7 +120,7 @@ def orient_plot(ax):
     ax.view_init(azim=-142, elev=14)
 
 
-def plot_3d_scatter(states, title, color):
+def plot_3d_scatter(states, title, color='r'):
     ''' 3D plot labeled clusters
 
     Args:
@@ -128,14 +129,13 @@ def plot_3d_scatter(states, title, color):
         color (str or 2D array): color for all points
 
     Returns:
-         fig (fig):  the figure on which the scatter plot has been drawn
     '''
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.scatter(*np.split(states, 3), zdir='z', c=color)
+    ax.scatter(states[:, 0], states[:, 1], states[:, 2], zdir='z', c=color)
 
     plt.title(title)
-    return fig
+    orient_plot(ax)
 
 
 def plot_3d_labeled_clusters(states, labels, title, colors):
@@ -148,7 +148,6 @@ def plot_3d_labeled_clusters(states, labels, title, colors):
         colors (itertools.cycle): color cycle
 
     Returns:
-         fig (fig):  the figure on which the scatter plot has been drawn
     '''
     fig = plt.figure()
     ax = fig.gca(projection='3d')
@@ -158,7 +157,6 @@ def plot_3d_labeled_clusters(states, labels, title, colors):
         ax.scatter(states[labels == i, 0], states[labels == i, 1], states[labels == i, 2], zdir='z', c=colors.next())
 
     plt.title(title)
-    return fig
 
 
 def get_color_cycle(ind):
