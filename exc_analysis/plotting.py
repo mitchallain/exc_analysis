@@ -24,6 +24,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
+labels = ['Boom', 'Stick', 'Bucket', 'Swing']
+
+
 def draw_exc(ax, state, lw=2, lock_axes=True, rotate=True, gnd_offset=17.1):
     '''Draws the excavator on 3D xyz axes with lines for each linkage
         uses random colors for each drawing
@@ -166,3 +169,73 @@ def get_color_cycle(ind):
     csets = [['navy', 'c', 'cornflowerblue', 'gold', 'darkorange', 'r']]
 
     return itertools.cycle(csets[ind])
+
+
+def view_trial(trial, trial_type='manual'):
+    ''' View position data from a pandas dataframe
+
+    Args:
+        trial (pandas.dataframe): a dataframe with at minimum the measurement data '''
+
+    if trial_type == 'manual':
+        signals = ['Ms', 'Cmd']
+    elif trial_type == 'blended':
+        signals = ['Ms', 'Cmd', 'Ctrl', 'Blended']
+    elif trial_type == 'autonomous':
+        signals = ['Ms', 'Cmd', 'Error']
+
+    dim = len(signals)
+
+    fig, ax = plt.subplots(nrows=dim, sharex=True, figsize=(6, 2*dim))
+
+    for i in range(dim):
+        # Change the axis units to serif
+        plt.setp(ax[i].get_ymajorticklabels(), family='serif', fontsize=14)
+        plt.setp(ax[i].get_xmajorticklabels(), family='serif', fontsize=14)
+
+        ax[i].spines['right'].set_color('none')
+        ax[i].spines['top'].set_color('none')
+
+        ax[i].xaxis.set_ticks_position('bottom')
+        ax[i].yaxis.set_ticks_position('left')
+
+        # Turn on the plot grid and set appropriate linestyle and color
+        ax[i].grid(True, linestyle=':', color='0.75')
+        ax[i].set_axisbelow(True)
+
+    X = np.repeat(np.expand_dims(trial['Time'].values, 1), dim, 1)
+
+    for i in xrange(dim):
+        Y = trial[[lbl + ' ' + signals[i] for lbl in labels]].values
+        lines = ax[i].plot(X, Y, linewidth=2, linestyle='-')
+
+        plt.figlegend(lines, labels=labels, loc='lower right', family='serif', fontsize=12)
+
+    plt.gcf().subplots_adjust(bottom=0.5, left=0.5)
+
+    plt.tight_layout()
+
+
+def view_assistance_magnitude(blended):
+    ''' View assistance as a stacked plot '''
+    fig, ax = plt.subplots(nrows=4, sharex=True, figsize=(6, 8))
+
+    for i in range(4):
+        # Change the axis units to serif
+        plt.setp(ax[i].get_ymajorticklabels(), family='serif', fontsize=14)
+        plt.setp(ax[i].get_xmajorticklabels(), family='serif', fontsize=14)
+
+        ax[i].spines['right'].set_color('none')
+        ax[i].spines['top'].set_color('none')
+
+        ax[i].xaxis.set_ticks_position('bottom')
+        ax[i].yaxis.set_ticks_position('left')
+
+        # Turn on the plot grid and set appropriate linestyle and color
+        ax[i].grid(True, linestyle=':', color='0.75')
+        ax[i].set_axisbelow(True)
+
+    X = blended['Time'].values
+
+    for i in range(4):
+        ax[i].stackplot(X, blended[labels[i] + ' Cmd'], blended[labels[i] + ' Blended'])
