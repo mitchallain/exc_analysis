@@ -209,7 +209,7 @@ def view_trial(trial, trial_type='manual'):
         Y = trial[[lbl + ' ' + signals[i] for lbl in labels]].values
         lines = ax[i].plot(X, Y, linewidth=2, linestyle='-')
 
-        plt.figlegend(lines, labels=labels, loc='lower right', family='serif', fontsize=12)
+        plt.figlegend(lines, labels=labels, loc='lower right', fontsize=12)
 
     plt.gcf().subplots_adjust(bottom=0.5, left=0.5)
 
