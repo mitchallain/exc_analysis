@@ -566,7 +566,7 @@ def compute_means(partitions, states):
 
 
 def plot_action_primitives(df, labels):
-    ''' Plot the action primitive labels as in task-learning.ipynb 
+    ''' Plot the action primitive labels as in task-learning.ipynb
 
     df (pandas.DataFrame): dataframe containing trial data
     labels (np.array): n x k integer array with labels'''
@@ -595,4 +595,3 @@ def plot_action_primitives(df, labels):
         plt.setp(ax.get_xticklabels(), visible=False)
 
     plt.tight_layout()
-

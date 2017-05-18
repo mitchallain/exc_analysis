@@ -239,3 +239,35 @@ def view_assistance_magnitude(blended):
 
     for i in range(4):
         ax[i].stackplot(X, blended[labels[i] + ' Cmd'], blended[labels[i] + ' Blended'])
+
+
+def plot_states_3d(df, **kwargs):
+    ''' Scatter plot of measurements from dataframe '''
+    # fig = plt.figure()
+    ax = plt.gca(projection='3d')
+
+    plt.title('State Observations in Workspace')
+    plt.xlabel('X Position (cm)', family='serif', labelpad=15, fontsize=14)
+    plt.ylabel('Y Position (cm)', family='serif', labelpad=15, fontsize=14)
+    ax.set_zlabel('Z Position (cm)', family='serif', labelpad=10, fontsize=14)
+
+    ax.scatter(*np.split(df[['X', 'Y', 'Z']].values, 3, axis=1), zdir='z', **kwargs)
+    orient_plot(ax)
+
+
+def plot_quiver_3d(df, **kwargs):
+    ''' Quiver plot from task-learning.ipynb '''
+    # fig = plt.figure()
+    ax = plt.gca(projection='3d')
+    quiv = df[['X', 'Y', 'Z']].diff().shift(-1).fillna(0).values
+    args = np.split(df[['X', 'Y', 'Z']].values, 3, axis=1) + np.split(quiv, 3, axis=1)
+
+    plt.title('State-Action Observations in Workspace')
+    plt.xlabel('X Position (cm)', family='serif', labelpad=15, fontsize=14)
+    plt.ylabel('Y Position (cm)', family='serif', labelpad=15, fontsize=14)
+    ax.set_zlabel('Z Position (cm)', family='serif', labelpad=10, fontsize=14)
+
+    ax.scatter(*args[:3], zdir='z')
+    ax.quiver(*args, length=6, normalize=True, color='b', linewidth=1)
+
+    orient_plot(ax)
