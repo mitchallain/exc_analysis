@@ -22,7 +22,10 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 import scipy.stats
-# from sklearn.preprocessing import normalize
+from sklearn.preprocessing import normalize
+
+
+act_names = ['Boom', 'Stick', 'Bucket', 'Swing']
 
 
 def compute_rate(filepath):
@@ -32,6 +35,7 @@ def compute_rate(filepath):
         filepath (str): path to log file with N samples
 
     Returns:
+        pos (np.array): 5 x N array of time and actuator positions
         rate_sm (np.array): 4 x N array of smoothed rates
     '''
 
@@ -56,7 +60,7 @@ def compute_rate(filepath):
 
     assert (len(rate_sm[0]) == len(pos[0][:-1]))
 
-    return pos, rate_sm
+    return pos.T, np.nan_to_num(rate_sm).T
 
 
 def k_means_action_primitives(rate, threshold=False, eta=None, swap=True):
@@ -559,3 +563,36 @@ def compute_means(partitions, states):
     mean_squared_error = np.mean(squared_error)
 
     return mean_squared_error, sg_means
+
+
+def plot_action_primitives(df, labels):
+    ''' Plot the action primitive labels as in task-learning.ipynb 
+
+    df (pandas.DataFrame): dataframe containing trial data
+    labels (np.array): n x k integer array with labels'''
+    plt.figure(figsize=(6, 8))
+    # plt.title('Action Primitives for Each Actuator')
+    titles = [name + ' Velocity' for name in act_names]
+
+    # bigax = fig.add_subplot(111, frameon=False)
+    plt.ylabel('Actuator Velocity (cm/s)')
+
+    # first plot so we can share axes
+    i = 3
+    ax3 = plt.subplot(4, 1, i+1)
+    plt.title(titles[i])
+    ax3.spines['right'].set_color('none')
+    ax3.spines['top'].set_color('none')
+    cluster_plot_new(df.index, df[act_names[i] + ' Vel'], labels[:, i])
+    plt.xlabel('Time (s)')
+
+    for i in range(0, 3):
+        ax = plt.subplot(4, 1, i+1, sharex=ax3)
+        plt.title(titles[i])
+        ax.spines['right'].set_color('none')
+        ax.spines['top'].set_color('none')
+        cluster_plot_new(df.index, df[act_names[i] + ' Vel'], labels[:, i])
+        plt.setp(ax.get_xticklabels(), visible=False)
+
+    plt.tight_layout()
+
