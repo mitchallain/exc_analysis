@@ -21,6 +21,7 @@ import math
 from kinematics import exc
 import itertools
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -255,7 +256,7 @@ def plot_states_3d(df, **kwargs):
     orient_plot(ax)
 
 
-def plot_quiver_3d(df, **kwargs):
+def plot_quiver_3d(df, linewidth=1, **kwargs):
     ''' Quiver plot from task-learning.ipynb '''
     # fig = plt.figure()
     ax = plt.gca(projection='3d')
@@ -268,7 +269,7 @@ def plot_quiver_3d(df, **kwargs):
     ax.set_zlabel('Z Position (cm)', family='serif', labelpad=10, fontsize=14)
 
     ax.scatter(*args[:3], zdir='z')
-    ax.quiver(*args, length=6, normalize=True, color='b', linewidth=1)
+    ax.quiver(*args, length=6, normalize=True, color='b', linewidth=linewidth, **kwargs)
 
     orient_plot(ax)
 
@@ -285,3 +286,68 @@ def plot_gmm_results(X, Y_, c_iter, **kwargs):
     plt.xlabel('X', labelpad=15)
     plt.ylabel('Y', labelpad=15)
     return ax
+
+
+def cluster_plot(time, data, clusters, listed_colors, **kwargs):
+    fig = plt.scatter(time, data, c=clusters,
+                      cmap=mpl.colors.ListedColormap(listed_colors), marker='.', **kwargs)
+#     plt.title('K-Means without Thresholding')
+#     plt.xlabel('Time (s)')
+#     plt.ylabel('Boom Velocity (mm/s)')
+
+    cbar = plt.colorbar(ticks=[1, 2, 3])
+    cbar.ax.set_yticklabels(['1', '2', '3'])  # colorbar
+    # plt.tight_layout()
+    return fig
+
+
+def plot_action_primitives(df, clusters, listed_colors=('r', 'g', 'b'), **kwargs):
+    ''' Plot the action primitive cluster labels as in task-learning.ipynb
+
+    df (pandas.DataFrame): dataframe containing trial data
+    labels (np.array): n x k integer array with labels'''
+    plt.figure(figsize=(10, 4))
+    # plt.title('Action Primitives for Each Actuator')
+    titles = [name + ' Velocity' for name in labels]
+
+    # bigax = fig.add_subplot(111, frameon=False)
+    plt.ylabel('Actuator Velocity (cm/s)')
+
+    # first plot bottom so we can share axes
+    i = 1
+    ax3 = plt.subplot(223)
+    plt.title(titles[i])
+    ax3.spines['right'].set_color('none')
+    ax3.spines['top'].set_color('none')
+    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
+                 listed_colors=listed_colors, **kwargs)
+    plt.xlabel('Time (s)')
+
+    i = 3
+    ax4 = plt.subplot(224)
+    plt.title(titles[i])
+    ax4.spines['right'].set_color('none')
+    ax4.spines['top'].set_color('none')
+    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
+                 listed_colors=listed_colors, **kwargs)
+    plt.xlabel('Time (s)')
+
+    i = 0
+    ax1 = plt.subplot(221)
+    plt.title(titles[i])
+    ax1.spines['right'].set_color('none')
+    ax1.spines['top'].set_color('none')
+    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
+                 listed_colors=listed_colors, **kwargs)
+    plt.setp(ax3.get_xticklabels(), visible=False)
+
+    i = 2
+    ax2 = plt.subplot(222)
+    plt.title(titles[i])
+    ax2.spines['right'].set_color('none')
+    ax2.spines['top'].set_color('none')
+    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
+                 listed_colors=listed_colors, **kwargs)
+    plt.setp(ax4.get_xticklabels(), visible=False)
+
+    return ax1, ax2, ax3, ax4
