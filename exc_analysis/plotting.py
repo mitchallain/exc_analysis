@@ -27,7 +27,7 @@ from mpl_toolkits.mplot3d import Axes3D
 labels = ['Boom', 'Stick', 'Bucket', 'Swing']
 
 
-def draw_exc(ax, state, lw=2, lock_axes=True, rotate=True, gnd_offset=17.1):
+def draw_exc(ax, state, lw=2, lock_axes=True, rotate=True, gnd_offset=17.1, c='y'):
     '''Draws the excavator on 3D xyz axes with lines for each linkage
         uses random colors for each drawing
 
@@ -103,7 +103,7 @@ def draw_exc(ax, state, lw=2, lock_axes=True, rotate=True, gnd_offset=17.1):
     # color = np.random.rand(3)
 
     for line in [l0, l1, l2, l3, l4]:
-        ax.plot(line[0], line[1], line[2], '-o', zdir='z', linewidth=lw, c='y', zorder=0)
+        ax.plot(line[0], line[1], line[2], '-o', zdir='z', linewidth=lw, c=c, zorder=0)
 
     if lock_axes:
         ax.set_xlim3d([0, 80])
@@ -246,7 +246,7 @@ def plot_states_3d(df, **kwargs):
     # fig = plt.figure()
     ax = plt.gca(projection='3d')
 
-    plt.title('State Observations in Workspace')
+    # plt.title('State Observations in Workspace', y=1)
     plt.xlabel('X Position (cm)', family='serif', labelpad=15, fontsize=14)
     plt.ylabel('Y Position (cm)', family='serif', labelpad=15, fontsize=14)
     ax.set_zlabel('Z Position (cm)', family='serif', labelpad=10, fontsize=14)
@@ -271,3 +271,17 @@ def plot_quiver_3d(df, **kwargs):
     ax.quiver(*args, length=6, normalize=True, color='b', linewidth=1)
 
     orient_plot(ax)
+
+
+def plot_gmm_results(X, Y_, c_iter, **kwargs):
+    ax = plt.gca(projection='3d')
+    for i in set(Y_):
+        if not np.any(Y_ == i):
+            continue
+        ax.scatter(X[Y_ == i, 0], X[Y_ == i, 1], X[Y_ == i, 2],
+                   zdir='z', zorder=1, c=c_iter.next(), **kwargs)
+
+    orient_plot(ax)
+    plt.xlabel('X', labelpad=15)
+    plt.ylabel('Y', labelpad=15)
+    return ax

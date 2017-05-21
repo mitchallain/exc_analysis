@@ -23,6 +23,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import scipy.stats
 from sklearn.preprocessing import normalize
+import pdb
 
 
 act_names = ['Boom', 'Stick', 'Bucket', 'Swing']
@@ -216,6 +217,14 @@ def rational_action_primitive(subgoal, state, code=(1, 2, 3), threshold=5):
     return np.array(action_class)
 
 
+def action_direction_likelihood(state, action, subgoal, alpha=1):
+    ''' Returns the exponential likelihood of the action when the direction is 
+        compared to the direction to the subgoal '''
+    p_sz = subgoal - state
+    dir_comp = (np.dot(p_sz, action) / (np.linalg.norm(p_sz) * np.linalg.norm(action))) - 1
+    return np.e**(alpha * dir_comp)
+
+
 def bnirl_sampling(states, partitions, primitives, verbose=False, debug=False, eta=1):
     '''One Gibbs sampling sweep,
     run in for loop until it converges
@@ -399,6 +408,57 @@ def bnirl_sampling_3(states, partitions, primitives, verbose=False, debug=False,
         new_sg_label = np.random.randint(0, dim)
         crp = eta / float(dim - 1 + eta)
         act_likelihood = np.e**(np.linalg.norm(primitives - rational_action_primitive(states[new_sg_label], state)))
+        part_posterior.append(crp*act_likelihood)
+
+        # Normalize the posterior
+        part_posterior = np.array(part_posterior) / float(sum(part_posterior))
+
+        # Assign partition
+        partitions[i] = int(np.random.choice(list(set(partitions)) + [new_sg_label],
+                                             1, p=part_posterior))
+
+    return partitions
+
+
+def bnirl_sampling_adir(states, actions, partitions, verbose=False, debug=False, eta=1, alpha=1):
+    '''One Gibbs sampling sweep,
+        run in for loop until it converges
+
+    Args:
+        states [np.array]: m x n where n is actuators and m is samples
+        actions [np.array]:
+        partitions [list]: m x 1 partition label for each sample, where label is index of state with that subgoal location
+        verbose [bool]: gives more info, for debugging
+        eta [int]: hyperparameter for CRP
+
+    Returns:
+        partitions [list]: updated partitions after Gibbs sweep
+        '''
+    dim = len(states)
+
+    if debug:
+        pdb.set_trace()
+
+    # For each observation
+    for i, state in enumerate(states):
+        if verbose:
+            print('After observation %i, there are %i partitions') % (i, len(set(partitions)))
+
+        part_posterior = []
+
+        # For each existing partition
+        for j in set(partitions):  # existing partitions
+            crp = partitions.count(j) / float(dim - 1 + eta)
+            act_likelihood = action_direction_likelihood(state, actions[i], states[j], alpha=alpha)
+            np.e**(np.linalg.norm(actions[i] - rational_action_primitive(states[j], state)))
+
+            # Compute partition assignment posterior
+            part_posterior.append(crp*act_likelihood)
+
+        # Draw new subgoal uniformly from demo states
+        new_sg_label = np.random.randint(0, dim)
+        crp = eta / float(dim - 1 + eta)
+        act_likelihood = action_direction_likelihood(state, actions[i], states[new_sg_label], alpha=alpha)
         part_posterior.append(crp*act_likelihood)
 
         # Normalize the posterior
