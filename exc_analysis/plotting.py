@@ -242,10 +242,9 @@ def view_assistance_magnitude(blended):
         ax[i].stackplot(X, blended[labels[i] + ' Cmd'], blended[labels[i] + ' Blended'])
 
 
-def plot_states_3d(df, **kwargs):
+def plot_states_3d(df, ax, **kwargs):
     ''' Scatter plot of measurements from dataframe '''
     # fig = plt.figure()
-    ax = plt.gca(projection='3d')
 
     # plt.title('State Observations in Workspace', y=1)
     plt.xlabel('X Position (cm)', family='serif', labelpad=15, fontsize=14)
@@ -254,6 +253,7 @@ def plot_states_3d(df, **kwargs):
 
     ax.scatter(*np.split(df[['X', 'Y', 'Z']].values, 3, axis=1), zdir='z', **kwargs)
     orient_plot(ax)
+    return ax
 
 
 def plot_quiver_3d(df, linewidth=1, **kwargs):
