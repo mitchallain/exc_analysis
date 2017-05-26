@@ -475,13 +475,8 @@ def dp_kmeans(states, partitions, verbose=False, debug=False, lamb=1):
     '''run in for loop until it converges
 
     Args:
-        states [np.array]: m x n where n is actuators and m is samples
-        partitions [list]: m x 1 partition label for each sample
-        primitives [np.array]: m x n array describing motion at sample
-            e.g., primitives[0] = [1, 0, -1, 1]
-                1: positive velocity or input
-                0: no velocity,
-                -1: negative velocity
+        states [np.array]: n x m where m is actuators and n is samples
+        partitions [list]: n x 1 partition label for each sample
         verbose [bool]: gives more info, for debugging
         lamb [float]: cluster distance penalty, (lambda conlicts with Python)
 
