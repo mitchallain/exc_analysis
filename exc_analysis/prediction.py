@@ -274,11 +274,7 @@ def get_mvn_action_likelihood_marginal(states, actions, means, covs):
             action_likelihoods[i, g], indicator[i, g] = mvn.mvnun(low, upp, means_marg, covs_marg, maxpts=100000)
 
             if (indicator[i, g] == 1):
-                logging.info('{} {} {} {}'.format(low, upp, means_marg, covs_marg))
-    # if (indicator == 1).any():
-        # print('mvnun failed: error code 1')
-        # print(low, upp, means, covs)
-        # raise ArithmeticError('Fortran function mvnun: error code 1')
+                logging.info(f'{low} {upp} {means_marg} {covs_marg}')
     return action_likelihoods[0]
 
 
@@ -322,11 +318,7 @@ def get_mvn_action_likelihood(states, actions, means, covs):
             # pdb.set_trace()
             action_likelihoods[i, g], indicator[i, g] = mvn.mvnun(low, upp, means[g], covs[g], maxpts=100000)
             if (indicator[i, g] == 1):
-                logging.info('{} {} {} {}'.format(low, upp, means, covs))
-    # if (indicator == 1).any():
-        # print('mvnun failed: error code 1')
-        # print(low, upp, means, covs)
-        # raise ArithmeticError('Fortran function mvnun: error code 1')
+                logging.info(f'{low} {upp} {means} {covs}')
     return action_likelihoods
 
 
@@ -432,12 +424,7 @@ class TriggerPrediction():
         # print less_than
         negative = ((self.sg_model[self.subgoal-1]['it'][1]) < 0)
         # print negative
-        if not (less_than != negative):  # If input < threshold and threshold negative, or > = threshold and threshold positive
-            self.active = True
-            # print(self.subgoal, 'Ass: True')
-        else:  # No input
-            self.active = False
-
+        self.active = less_than == negative
         return self.subgoal, self.active
 
 

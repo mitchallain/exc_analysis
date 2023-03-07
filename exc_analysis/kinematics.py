@@ -160,7 +160,7 @@ def forward_kin_pt(exc, sw, bm, sk, bk, bias=0):
     #                 [0, 0, 0, P04[3]]])
 
     # Position and orientation of the end effector
-    eef = [axis.pop() for axis in P04[0:3].tolist()]
+    eef = [axis.pop() for axis in P04[:3].tolist()]
     assert eef
     eef.append(tb)
 

@@ -178,13 +178,13 @@ def view_trial(trial, trial_type='manual'):
     Args:
         trial (pandas.dataframe): a dataframe with at minimum the measurement data '''
 
-    if trial_type == 'manual':
-        signals = ['Ms', 'Cmd']
-    elif trial_type == 'blended':
-        signals = ['Ms', 'Cmd', 'Ctrl', 'Blended']
-    elif trial_type == 'autonomous':
+    if trial_type == 'autonomous':
         signals = ['Ms', 'Cmd', 'Error']
 
+    elif trial_type == 'blended':
+        signals = ['Ms', 'Cmd', 'Ctrl', 'Blended']
+    elif trial_type == 'manual':
+        signals = ['Ms', 'Cmd']
     dim = len(signals)
 
     fig, ax = plt.subplots(nrows=dim, sharex=True, figsize=(6, 2*dim))
@@ -207,7 +207,7 @@ def view_trial(trial, trial_type='manual'):
     X = np.repeat(np.expand_dims(trial['Time'].values, 1), dim, 1)
 
     for i in xrange(dim):
-        Y = trial[[lbl + ' ' + signals[i] for lbl in labels]].values
+        Y = trial[[f'{lbl} {signals[i]}' for lbl in labels]].values
         lines = ax[i].plot(X, Y, linewidth=2, linestyle='-')
 
         plt.figlegend(lines, labels=labels, loc='lower right', fontsize=12)
@@ -239,7 +239,9 @@ def view_assistance_magnitude(blended):
     X = blended['Time'].values
 
     for i in range(4):
-        ax[i].stackplot(X, blended[labels[i] + ' Cmd'], blended[labels[i] + ' Blended'])
+        ax[i].stackplot(
+            X, blended[f'{labels[i]} Cmd'], blended[f'{labels[i]} Blended']
+        )
 
 
 def plot_states_3d(df, ax, **kwargs):
@@ -308,7 +310,7 @@ def plot_action_primitives(df, clusters, listed_colors=('r', 'g', 'b'), **kwargs
     labels (np.array): n x k integer array with labels'''
     plt.figure(figsize=(10, 4))
     # plt.title('Action Primitives for Each Actuator')
-    titles = [name + ' Velocity' for name in labels]
+    titles = [f'{name} Velocity' for name in labels]
 
     # bigax = fig.add_subplot(111, frameon=False)
     plt.ylabel('Actuator Velocity (cm/s)')
@@ -319,8 +321,13 @@ def plot_action_primitives(df, clusters, listed_colors=('r', 'g', 'b'), **kwargs
     plt.title(titles[i])
     ax3.spines['right'].set_color('none')
     ax3.spines['top'].set_color('none')
-    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
-                 listed_colors=listed_colors, **kwargs)
+    cluster_plot(
+        df.index,
+        df[f'{labels[i]} Vel'],
+        clusters[:, i],
+        listed_colors=listed_colors,
+        **kwargs,
+    )
     plt.xlabel('Time (s)')
 
     i = 3
@@ -328,8 +335,13 @@ def plot_action_primitives(df, clusters, listed_colors=('r', 'g', 'b'), **kwargs
     plt.title(titles[i])
     ax4.spines['right'].set_color('none')
     ax4.spines['top'].set_color('none')
-    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
-                 listed_colors=listed_colors, **kwargs)
+    cluster_plot(
+        df.index,
+        df[f'{labels[i]} Vel'],
+        clusters[:, i],
+        listed_colors=listed_colors,
+        **kwargs,
+    )
     plt.xlabel('Time (s)')
 
     i = 0
@@ -337,8 +349,13 @@ def plot_action_primitives(df, clusters, listed_colors=('r', 'g', 'b'), **kwargs
     plt.title(titles[i])
     ax1.spines['right'].set_color('none')
     ax1.spines['top'].set_color('none')
-    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
-                 listed_colors=listed_colors, **kwargs)
+    cluster_plot(
+        df.index,
+        df[f'{labels[i]} Vel'],
+        clusters[:, i],
+        listed_colors=listed_colors,
+        **kwargs,
+    )
     plt.setp(ax3.get_xticklabels(), visible=False)
 
     i = 2
@@ -346,8 +363,13 @@ def plot_action_primitives(df, clusters, listed_colors=('r', 'g', 'b'), **kwargs
     plt.title(titles[i])
     ax2.spines['right'].set_color('none')
     ax2.spines['top'].set_color('none')
-    cluster_plot(df.index, df[labels[i] + ' Vel'], clusters[:, i],
-                 listed_colors=listed_colors, **kwargs)
+    cluster_plot(
+        df.index,
+        df[f'{labels[i]} Vel'],
+        clusters[:, i],
+        listed_colors=listed_colors,
+        **kwargs,
+    )
     plt.setp(ax4.get_xticklabels(), visible=False)
 
     return ax1, ax2, ax3, ax4

@@ -94,10 +94,6 @@ def k_means_action_primitives(rate, threshold=False, eta=None, swap=True):
 
     mean_sorted_indexes = tuple(sorted(range(len(means)), key=lambda k: means[k]))
     dists = [dists[i] for i in mean_sorted_indexes]
-    # pdb.set_trace()
-
-    swap_set = (1, 2, 3)
-
     if threshold:
 
         if eta is None:
@@ -117,6 +113,10 @@ def k_means_action_primitives(rate, threshold=False, eta=None, swap=True):
     sw_labels = np.copy(labels)
 
     if swap:
+        # pdb.set_trace()
+
+        swap_set = (1, 2, 3)
+
         for i, label in enumerate(labels):
             sw_labels[i] = swap_set[mean_sorted_indexes.index(label)]
 
@@ -187,11 +187,7 @@ def rational_actor(subgoal, state):
         action_class (np.array): n-length array with action class
             e.g., array([1, -1, 1, -1])
     '''
-    action_class = []
-
-    for (sg, st) in zip(subgoal, state):
-        action_class.append(np.sign(sg - st))
-
+    action_class = [np.sign(sg - st) for sg, st in zip(subgoal, state)]
     return np.array(action_class)
 
 
@@ -251,11 +247,12 @@ def bnirl_sampling(states, partitions, primitives, verbose=False, debug=False, e
     # For each observation
     for i, state in enumerate(states):
         # Start by recomputing subgoal locations from partition means
-        sg_means = dict()
+        sg_means = {}
         for j in set(partitions):
-            sg_mean = []
-            for act in states.transpose():
-                sg_mean.append(np.mean([act[k] for k in range(dim) if (partitions[k] == j)]))
+            sg_mean = [
+                np.mean([act[k] for k in range(dim) if (partitions[k] == j)])
+                for act in states.transpose()
+            ]
             sg_means[j] = np.array(sg_mean)
 
         if verbose:
@@ -288,7 +285,7 @@ def bnirl_sampling(states, partitions, primitives, verbose=False, debug=False, e
         partitions[i] = int(np.random.choice(list(set(partitions)) + [max(set(partitions)) + 1],
                                             1, p=part_posterior))
 
-        # pdb.set_trace()
+            # pdb.set_trace()
 
     return partitions
 
@@ -491,22 +488,20 @@ def dp_kmeans(states, partitions, verbose=False, debug=False, lamb=1):
     # For each observation
     for i, state in enumerate(states):
         # Start by recomputing subgoal locations from partition means
-        sg_means = dict()
+        sg_means = {}
         for j in set(partitions):
-            sg_mean = []
-            for act in states.transpose():
-                sg_mean.append(np.mean([act[k] for k in range(dim) if (partitions[k] == j)]))
+            sg_mean = [
+                np.mean([act[k] for k in range(dim) if (partitions[k] == j)])
+                for act in states.transpose()
+            ]
             sg_means[j] = np.array(sg_mean)
 
         if verbose:
             print('After observation %i, there are %i partitions with means %s') % (i, len(set(partitions)), str(sg_means))
 
-        cluster_dist = []
-
-        # For each existing partition
-        for j in set(partitions):  # existing partitions
-            cluster_dist.append((j, (np.linalg.norm(sg_means[j] - state))))
-
+        cluster_dist = [
+            (j, (np.linalg.norm(sg_means[j] - state))) for j in set(partitions)
+        ]
         min_cluster = min(cluster_dist, key=lambda t: t[1])
 
         # Pick closest cluster or form new cluster
@@ -524,18 +519,13 @@ def dp_kmeans(states, partitions, verbose=False, debug=False, lamb=1):
 def test_data(samples=100):
     '''Incomplete'''
     action_set = [-1, 0, 1]
-    primitives = []
-    states = []
     dimm = 100
 
-    for i in range(dimm):
-        primitives.append(np.random.choice(action_set, 2))
-
-    for i in range(dimm / 2):
-        states.append(np.random.normal([2, 2], [1, 3]))
-
-    for i in range(len(states), dimm):
-        states.append(np.random.normal([-3, -4], [2, 1]))
+    primitives = [np.random.choice(action_set, 2) for _ in range(dimm)]
+    states = [np.random.normal([2, 2], [1, 3]) for _ in range(dimm / 2)]
+    states.extend(
+        np.random.normal([-3, -4], [2, 1]) for _ in range(len(states), dimm)
+    )
 
 
 def smooth(x, window_len=11, window='hanning'):
@@ -579,7 +569,7 @@ def smooth(x, window_len=11, window='hanning'):
     if window_len < 3:
         return x
 
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
 
     s = np.r_[x[window_len-1:0:-1], x, x[-1:-window_len:-1]]
@@ -589,8 +579,7 @@ def smooth(x, window_len=11, window='hanning'):
     else:
         w = eval('np.'+window+'(window_len)')
 
-    y = np.convolve(w / w.sum(), s, mode='valid')
-    return y
+    return np.convolve(w / w.sum(), s, mode='valid')
 
 
 def compute_means(partitions, states):
@@ -641,7 +630,7 @@ def plot_action_primitives(df, labels):
     cluster_plot_new(df.index, df[act_names[i] + ' Vel'], labels[:, i])
     plt.xlabel('Time (s)')
 
-    for i in range(0, 3):
+    for i in range(3):
         ax = plt.subplot(4, 1, i+1, sharex=ax3)
         plt.title(titles[i])
         ax.spines['right'].set_color('none')
